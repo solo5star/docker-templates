@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  syncthing:
+    image: syncthing/syncthing
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - syncthing_data:/var/syncthing
+
+  samba:
+    image: dperson/samba
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - syncthing_data:/data
+    profiles:
+      - samba
+    environment:
+      - USERID=1000
+      - GROUPID=1000
+    # -n Start the 'nmbd' daemon to advertise the shares
+    # -p Set ownership and permissions on the shares
+    # -r Disable recycle bin for shares
+    # -S Disable SMB2 minimum version
+    # -s Configure a share
+    # -u Add a user
+    command: >
+      -n -p -r -S
+      -s "data;/data;yes;no;no;all"
+      -u "${SMB_USERNAME};${SMB_PASSWORD}"
+
+volumes:
+  syncthing_data:
